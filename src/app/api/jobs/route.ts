@@ -1,64 +1,76 @@
-import { createClient } from '@/lib/supabase/server'
+import supabase from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
-  const supabase = createClient()
-  const { data, error } = await supabase.from('jobs').select('*').order('created_at', { ascending: false })
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ jobs: data })
+  try {
+    const { data, error } = await supabase
+      .from('jobs')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ jobs: data })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message || 'Internal error' }, { status: 500 })
+  }
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
-  const body = await req.json()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data, error } = await supabase.from('jobs').insert({
-    user_id: user.id,
-    title: body.title || 'New Job',
-    company: body.company || 'Unknown',
-    job_url: body.job_url || '',
-    location: body.location || null,
-    description: body.description || null,
-    source: body.source || 'manual',
-    match_score: body.match_score || null,
-  }).select().single()
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ job: data }, { status: 201 })
+  try {
+    const body = await req.json()
+    const { data, error } = await supabase.from('jobs').insert({
+      title: body.title || 'New Job',
+      company_name: body.company_name || body.company || 'Unknown',
+      location: body.location || null,
+      url: body.url || body.job_url || null,
+      description: body.description || null,
+      source: body.source || 'manual',
+      salary_min: body.salary_min || null,
+      salary_max: body.salary_max || null,
+      status: body.status || 'saved',
+    }).select().single()
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ job: data }, { status: 201 })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message || 'Internal error' }, { status: 500 })
+  }
 }
 
 export async function PATCH(req: NextRequest) {
-  const supabase = createClient()
-  const body = await req.json()
-  const { id, ...updates } = body
-
-  if (!id) return NextResponse.json({ error: 'Missing job id' }, { status: 400 })
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data, error } = await supabase.from('jobs')
-    .update({ ...updates, applied_at: updates.status === 'applied' ? new Date().toISOString() : undefined })
-    .eq('id', id).eq('user_id', user.id).select().single()
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ job: data })
+  try {
+    const body = await req.json()
+    const { id, ...updates } = body
+    if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+    if (updates.company && !updates.company_name) {
+      updates.company_name = updates.company
+      delete updates.company
+    }
+    if (updates.job_url && !updates.url) {
+      updates.url = updates.job_url
+      delete updates.job_url
+    }
+    const { data, error } = await supabase
+      .from('jobs')
+      .update(updates)
+      .eq('id', id)
+      .select().single()
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ job: data })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message || 'Internal error' }, { status: 500 })
+  }
 }
 
 export async function DELETE(req: NextRequest) {
-  const supabase = createClient()
-  const { searchParams } = new URL(req.url)
-  const id = searchParams.get('id')
-
-  if (!id) return NextResponse.json({ error: 'Missing job id' }, { status: 400 })
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { error } = await supabase.from('jobs').delete().eq('id', id).eq('user_id', user.id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ success: true })
+  try {
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+    const { error } = await supabase.from('jobs').delete().eq('id', id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message || 'Internal error' }, { status: 500 })
+  }
 }

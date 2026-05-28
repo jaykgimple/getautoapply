@@ -1,7 +1,7 @@
 -- JobBoxOS Initial Schema
 -- Phase 1: Auth, Jobs, Applications, Resumes, Contacts, Outreach
 
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Profiles
 CREATE TABLE public.profiles (
@@ -17,7 +17,7 @@ CREATE TABLE public.profiles (
 
 -- Jobs
 CREATE TABLE public.jobs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   company TEXT NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE public.jobs (
 
 -- Applications
 CREATE TABLE public.applications (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   job_id UUID REFERENCES public.jobs(id) ON DELETE SET NULL,
   job_title TEXT NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE public.applications (
 
 -- Resumes
 CREATE TABLE public.resumes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   is_master BOOLEAN DEFAULT false,
@@ -65,7 +65,7 @@ CREATE TABLE public.resumes (
 
 -- Contacts
 CREATE TABLE public.contacts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   company TEXT,
@@ -80,7 +80,7 @@ CREATE TABLE public.contacts (
 
 -- Outreach Messages
 CREATE TABLE public.outreach_messages (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   contact_id UUID REFERENCES public.contacts(id) ON DELETE CASCADE,
   channel TEXT CHECK (channel IN ('linkedin','email','other')),

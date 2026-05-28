@@ -1,41 +1,73 @@
-import { createClient } from '@/lib/supabase/server'
+import supabase from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
-  const supabase = createClient()
-  const [contacts, messages] = await Promise.all([
-    supabase.from('contacts').select('*').order('created_at', { ascending: false }),
-    supabase.from('outreach_messages').select('*, contacts(name)').order('sent_at', { ascending: false }).limit(50),
-  ])
-  return NextResponse.json({ contacts: contacts.data, messages: messages.data })
+  try {
+    const { data, error } = await supabase
+      .from('contacts')
+      .select('*, outreach_messages(*)')
+      .order('created_at', { ascending: false })
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ contacts: data })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const body = await req.json()
-
-  if (body.type === 'contact') {
-    const { data, error } = await supabase.from('contacts').insert({
-      user_id: user.id, name: body.name, company: body.company || null,
-      title: body.title || null, email: body.email || null,
-      linkedin_url: body.linkedin_url || null,
+  try {
+    const body = await req.json()
+    const { messages, ...contactData } = body
+    const { data: contact, error } = await supabase.from('contacts').insert({
+      name: contactData.name || '',
+      email: contactData.email || '',
+      company: contactData.company || '',
+      status: contactData.status || 'new',
     }).select().single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    return NextResponse.json({ contact: data }, { status: 201 })
+    if (messages && Array.isArray(messages) && messages.length > 0) {
+      const msgRows = messages.map((m: any) => ({
+        contact_id: contact.id,
+        content: m.content,
+        sent_at: m.sent_at || new Date().toISOString(),
+      }))
+      await supabase.from('outreach_messages').insert(msgRows)
+    }
+    return NextResponse.json({ contact }, { status: 201 })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
   }
+}
 
-  if (body.type === 'message') {
-    const { data, error } = await supabase.from('outreach_messages').insert({
-      user_id: user.id, contact_id: body.contact_id,
-      channel: body.channel || 'email', direction: 'sent',
-      subject: body.subject || null, body: body.body,
-    }).select().single()
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { id, ...updates } = body
+    if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+    const { data, error } = await supabase
+      .from('contacts')
+      .update(updates)
+      .eq('id', id)
+      .select().single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    return NextResponse.json({ message: data }, { status: 201 })
+    return NextResponse.json({ contact: data })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
   }
+}
 
-  return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+    await supabase.from('outreach_messages').delete().eq('contact_id', id)
+    const { error } = await supabase.from('contacts').delete().eq('id', id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
 }
