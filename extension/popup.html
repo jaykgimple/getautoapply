@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobBoxOS ApplyAssist</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { width: 320px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; color: #1f2937; }
+    .header { background: #f97316; color: white; padding: 16px; display: flex; align-items: center; gap: 8px; }
+    .header .logo { width: 24px; height: 24px; background: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: #f97316; }
+    .header span { font-weight: 600; font-size: 16px; }
+    .content { padding: 16px; }
+    .status { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; }
+    .status.connected { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .status.disconnected { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .field-count { text-align: center; padding: 12px; background: #f9fafb; border-radius: 8px; margin-bottom: 12px; }
+    .field-count .num { font-size: 28px; font-weight: 700; color: #f97316; }
+    .field-count .label { font-size: 12px; color: #6b7280; }
+    .btn { display: block; width: 100%; padding: 10px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 8px; }
+    .btn-primary { background: #f97316; color: white; }
+    .btn-primary:hover { background: #ea580c; }
+    .btn-secondary { background: #f3f4f6; color: #374151; }
+    .btn-secondary:hover { background: #e5e7eb; footer { padding: 12px 16px; border-top: 1px solid #e5e7eb; text-align: center; }
+    footer a { font-size: 12px; color: #6b7280; text-decoration: none; }
+    footer a:hover { color: #f97316; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">JB</div>
+    <span>JobBoxOS ApplyAssist</span>
+  </div>
+
+  <div class="content">
+    <div id="status" class="status disconnected">● Not connected to JobBoxOS</div>
+
+    <div class="field-count">
+      <div class="num" id="fieldCount">—</div>
+      <div class="label">form fields detected on this page</div>
+    </div>
+
+    <button class="btn btn-primary" id="btnHighlight">🔍 Highlight Fillable Fields</button>
+    <button class="btn btn-secondary" id="btnFill">✨ Auto-Fill Application</button>
+    <button class="btn btn-secondary" id="btnDashboard">📊 Open Dashboard</button>
+  </div>
+
+  <footer>
+    <a href="https://jobbox-os.vercel.app" target="_blank">jobbox-os.vercel.app</a>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
