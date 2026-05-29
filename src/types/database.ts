@@ -60,8 +60,11 @@ export interface Database {
           url: string | null
           description: string | null
           source: string
+          source_detail: string | null
           match_score: number | null
           status: string
+          job_type: string | null
+          is_remote: boolean
           applied_date: string | null
           notes: string | null
           created_at: string
@@ -77,8 +80,11 @@ export interface Database {
           url?: string | null
           description?: string | null
           source?: string
+          source_detail?: string | null
           match_score?: number | null
           status?: string
+          job_type?: string | null
+          is_remote?: boolean
           applied_date?: string | null
           notes?: string | null
           created_at?: string
