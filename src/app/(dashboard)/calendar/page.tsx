@@ -11,8 +11,7 @@ interface CalendarEvent {
   start_time: string
   end_time: string
   location: string | null
-  job_title?: string
-  company_name?: string
+  job_id: string | null
   reminder_minutes: number
   notes: string | null
   is_completed: boolean
@@ -90,7 +89,7 @@ export default function CalendarPage() {
     setFormEndTime(formatTime(event.end_time).replace(/(AM|PM)/, '').trim())
     setFormLocation(event.location || '')
     setFormNotes(event.notes || '')
-    formJobId; // keep existing
+    setFormJobId(event.job_id || '')
     setFormReminder(event.reminder_minutes)
     setShowForm(true)
   }

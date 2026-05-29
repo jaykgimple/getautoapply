@@ -22,6 +22,7 @@ interface Resume {
   id: string
   name: string
   content: any
+  is_default?: boolean
 }
 
 interface Job {
