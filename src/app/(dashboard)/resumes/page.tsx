@@ -22,7 +22,7 @@ export default function ResumesPage() {
   const [error, setError] = useState('')
   const [aiLoading, setAiLoading] = useState<string | null>(null)
   const [tailorJobId, setTailorJobId] = useState('')
-  const [jobs, setJobs] = useState<{ id: string; title: string; description: string | null }[]>([])
+  const [jobs, setJobs] = useState<{ id: string; title: string; description: string | null; company: string }[]>([])
   const [tailoringResumeId, setTailoringResumeId] = useState<string | null>(null)
   const supabase = createClient()
 
