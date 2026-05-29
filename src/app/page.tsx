@@ -109,8 +109,8 @@ const features = [
 const steps = [
   {
     num: '01',
-    title: 'Connect your profile',
-    description: 'Import from LinkedIn or build your profile in minutes. GetAutoApply learns your skills, preferences, and career goals.',
+    title: 'Connect LinkedIn & upload your resume',
+    description: 'Link your LinkedIn profile for AI analysis — get a recruiter attractiveness score, profile enhancement recommendations, and keyword optimization tips. Upload your current resume or build one from scratch.',
   },
   {
     num: '02',

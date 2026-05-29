@@ -124,23 +124,22 @@ export default function OutreachPage() {
     setAiLoading(contact.id)
     setError('')
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const response = await fetch('/api/ai/outreach', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_KEY || ''}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'openrouter/auto',
-          messages: [
-            { role: 'system', content: 'You write short, professional, warm outreach messages to recruiters and contacts. Keep it under 150 words. Reference their company naturally. No generic templates.' },
-            { role: 'user', content: `Write an outreach message to ${contact.name} at ${contact.company}. They are a recruiter/hiring manager. I'm a software engineer looking for new opportunities. Keep it short and genuine.` },
-          ],
+          contactName: contact.name,
+          company: contact.company,
+          tone: 'professional',
         }),
       })
-      if (!response.ok) throw new Error('AI request failed')
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}))
+        throw new Error(errData.error || 'AI request failed')
+      }
       const data = await response.json()
-      const generatedText = data.choices?.[0]?.message?.content || ''
+      const generatedText = data.message || ''
       if (generatedText) {
         setMsgContent(generatedText)
         setExpandedContact(contact.id)

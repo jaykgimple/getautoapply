@@ -106,24 +106,23 @@ export default function ResumesPage() {
       const resumeText = typeof resume?.content === 'string' ? resume.content : (resume?.content?.text || JSON.stringify(resume?.content || ''))
       const jobDesc = job.description || job.title
 
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const response = await fetch('/api/ai/resume', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_KEY || ''}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'openrouter/auto',
-          messages: [
-            { role: 'system', content: 'You are an expert resume writer. Given a resume and a job description, rewrite the resume to be ATS-optimized for the job. Focus on matching keywords, highlighting relevant experience, and professional formatting. Return ONLY the rewritten resume text.' },
-            { role: 'user', content: `Resume:\n${resumeText}\n\nJob Description:\n${jobDesc}\n\nRewrite this resume to be ATS-optimized for this job.` },
-          ],
+          resumeText,
+          jobTitle: job.title,
+          jobDescription: jobDesc,
+          company: job.company_name,
         }),
       })
 
-      if (!response.ok) throw new Error('AI request failed')
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}))
+        throw new Error(errData.error || 'AI request failed')
+      }
       const data = await response.json()
-      const tailoredText = data.choices?.[0]?.message?.content || ''
+      const tailoredText = data.tailoredResume || ''
 
       if (!tailoredText) throw new Error('No output from AI')
 
