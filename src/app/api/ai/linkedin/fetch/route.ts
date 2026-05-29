@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
           if (profileData.hasOccupation) {
             const occupations = Array.isArray(profileData.hasOccupation) ? profileData.hasOccupation : [profileData.hasOccupation]
             profile.experience = occupations
-              .map((o: any) => `${o.name || o.jobTitle || ''}${o worksFor?.name ? ` at ${o.worksFor.name}` : ''}`)
+              .map((o: any) => `${o.name || o.jobTitle || ''}${o.worksFor?.name ? ` at ${o.worksFor.name}` : ''}`)
               .filter(Boolean)
               .join('\n')
           }
