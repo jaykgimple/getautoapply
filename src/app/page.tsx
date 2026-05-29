@@ -86,8 +86,8 @@ const features = [
   },
   {
     icon: <IconDocument />,
-    title: 'One-Click Apply',
-    description: 'Chrome extension auto-fills applications on any careers page. Supports Workday, Greenhouse, Lever, and 200+ ATS platforms.',
+    title: 'One-Click Auto Apply',
+    description: 'Auto-fill applications on any careers page. Supports Workday, Greenhouse, Lever, and 200+ ATS platforms. Review and submit in seconds.',
   },
   {
     icon: <IconKanban />,
@@ -110,7 +110,7 @@ const steps = [
   {
     num: '01',
     title: 'Connect your profile',
-    description: 'Import from LinkedIn or build your profile in minutes. JobBoxOS learns your skills, preferences, and career goals.',
+    description: 'Import from LinkedIn or build your profile in minutes. GetAutoApply learns your skills, preferences, and career goals.',
   },
   {
     num: '02',
@@ -119,8 +119,8 @@ const steps = [
   },
   {
     num: '03',
-    title: 'Apply with one click',
-    description: 'Review AI-tailored resumes, approve, and submit. The Chrome extension handles the rest — forms, answers, and uploads.',
+    title: 'Auto apply with one click',
+    description: 'Review AI-tailored resumes, approve, and auto-submit. The Chrome extension handles forms, answers, and uploads on 200+ platforms.',
   },
   {
     num: '04',
@@ -131,22 +131,22 @@ const steps = [
 
 const testimonials = [
   {
-    quote: 'JobBoxOS cut my job search from 6 weeks to 12 days. The AI resume tailoring alone was worth it — my callback rate tripled.',
-    name: 'Sarah Chen',
-    role: 'Senior Engineer → Stripe',
-    avatar: 'SC',
+    quote: 'Cut my job search from 6 weeks to 12 days. The AI resume tailoring alone was worth it — my callback rate tripled.',
+    name: 'S. Chen',
+    role: 'Senior Engineer',
+    initials: 'SC',
   },
   {
-    quote: 'I was manually applying to 30+ jobs a day. JobBoxOS automated 80% of it and I ended up with more interviews than ever.',
-    name: 'Marcus Johnson',
-    role: 'PM → Notion',
-    avatar: 'MJ',
+    quote: 'I was manually applying to 30+ jobs a day. GetAutoApply automated 80% of it and I ended up with more interviews than ever.',
+    name: 'M. Johnson',
+    role: 'Product Manager',
+    initials: 'MJ',
   },
   {
     quote: 'The outreach feature is a game-changer. AI-generated recruiter messages that actually sound human. Got 4 referral conversations in a week.',
-    name: 'Priya Patel',
-    role: 'Design Lead → Figma',
-    avatar: 'PP',
+    name: 'P. Patel',
+    role: 'Design Lead',
+    initials: 'PP',
   },
 ]
 
@@ -155,7 +155,7 @@ const pricingPlans = [
     name: 'Free',
     price: '$0',
     period: 'forever',
-    description: 'Try JobBoxOS with core features',
+    description: 'Try GetAutoApply with core features',
     features: [
       'Up to 10 job saves',
       '3 AI resume generations/mo',
@@ -206,7 +206,11 @@ const faqs = [
   },
   {
     q: 'Which job boards do you support?',
-    a: 'LinkedIn, Indeed, Glassdoor, AngelList, Greenhouse, Workday, Lever, Lever, and 50+ more. We aggregate listings continuously and match them to your profile.',
+    a: 'LinkedIn, Indeed, Glassdoor, AngelList, Greenhouse, Workday, Lever, and 50+ more. We aggregate listings continuously and match them to your profile.',
+  },
+  {
+    q: 'How does auto-apply handle different application forms?',
+    a: 'Our Chrome extension uses intelligent form detection to auto-fill 95%+ of application fields. For complex applications (portfolio uploads, custom questions), it flags them for quick manual review.',
   },
   {
     q: 'Is my data secure?',
@@ -215,10 +219,6 @@ const faqs = [
   {
     q: 'Can I cancel anytime?',
     a: 'Yes. No contracts, no cancellation fees. Downgrade to Free at any time and keep all your saved data.',
-  },
-  {
-    q: 'How accurate is the one-click apply?',
-    a: 'Our Chrome extension handles 95%+ of application fields automatically. For complex applications (portfolio uploads, custom questions), it flags them for quick manual review.',
   },
   {
     q: 'Do you offer refunds?',
@@ -234,8 +234,8 @@ export default function LandingPage() {
       {/* ── Nav ── */}
       <nav className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-semibold text-sm" style={{ background: 'var(--brand)' }}>JB</div>
-          <span className="font-medium text-[15px]" style={{ color: 'var(--text-primary)' }}>JobBoxOS</span>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-semibold text-sm" style={{ background: 'var(--brand)' }}>GA</div>
+          <span className="font-medium text-[15px]" style={{ color: 'var(--text-primary)' }}>GetAutoApply</span>
         </Link>
         <div className="hidden sm:flex items-center gap-6">
           <a href="#features" className="text-[13px] font-medium" style={{ color: 'var(--text-tertiary)' }}>Features</a>
@@ -263,13 +263,13 @@ export default function LandingPage() {
               <span className="text-[12px] font-medium" style={{ color: 'var(--text-tertiary)' }}>Now in public beta — Free tier available</span>
             </div>
             <h1 className="text-[48px] sm:text-[56px] md:text-[64px] font-medium leading-[1.08] tracking-tight" style={{ color: 'var(--text-primary)' }}>
-              Your AI job search
+              Auto-apply to jobs
               <br />
-              <span style={{ color: 'var(--brand-bright)' }}>command center</span>
+              <span style={{ color: 'var(--brand-bright)' }}>with AI</span>
             </h1>
             <p className="mt-6 text-[18px] md:text-[20px] leading-relaxed max-w-2xl mx-auto" style={{ color: 'var(--text-tertiary)' }}>
-              Source jobs from 50+ boards, auto-tailor ATS-friendly resumes with AI,
-              apply with one click, and track every application — all in one dashboard.
+              Source jobs from 50+ boards, auto-tailor ATS-friendly resumes, apply with one click,
+              and track every application — all in one dashboard.
             </p>
             <div className="mt-10 flex items-center justify-center gap-3">
               <Link href="/signup" className="text-[14px] font-medium px-6 py-3 rounded-lg text-white transition-all hover:opacity-100 flex items-center gap-2 group" style={{ background: 'var(--brand)' }}>
@@ -330,7 +330,7 @@ export default function LandingPage() {
                   </div>
                   <p className="text-[15px] leading-relaxed flex-1" style={{ color: 'var(--text-secondary)' }}>&ldquo;{t.quote}&rdquo;</p>
                   <div className="flex items-center gap-3 mt-6 pt-4 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-semibold" style={{ background: 'var(--brand)', color: 'white' }}>{t.avatar}</div>
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-semibold" style={{ background: 'var(--brand)', color: 'white' }}>{t.initials}</div>
                     <div>
                       <p className="text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>{t.name}</p>
                       <p className="text-[12px]" style={{ color: 'var(--text-quaternary)' }}>{t.role}</p>
@@ -351,7 +351,7 @@ export default function LandingPage() {
                 Everything you need to land the role
               </h2>
               <p className="mt-3 text-[16px] max-w-xl mx-auto" style={{ color: 'var(--text-tertiary)' }}>
-                From sourcing to offer letter, JobBoxOS automates the entire job search workflow.
+                From sourcing to offer letter, GetAutoApply automates the entire job search workflow.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -374,7 +374,7 @@ export default function LandingPage() {
             <div className="text-center mb-14">
               <p className="text-[13px] font-medium uppercase tracking-widest mb-3" style={{ color: 'var(--brand-bright)' }}>How it works</p>
               <h2 className="text-[32px] md:text-[40px] font-medium tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                Land your dream job in 4 steps
+                Land your next job in 4 steps
               </h2>
             </div>
             <div className="space-y-0">
@@ -504,7 +504,7 @@ export default function LandingPage() {
               <span style={{ color: 'var(--brand-bright)' }}>dream role?</span>
             </h2>
             <p className="mt-4 text-[16px] max-w-lg mx-auto" style={{ color: 'var(--text-tertiary)' }}>
-              Stop manually applying. Start letting AI do the heavy lifting. No credit card required.
+              Stop manually applying. Start letting AI auto-apply for you. No credit card required.
             </p>
             <div className="mt-8 flex items-center justify-center gap-3">
               <Link href="/signup" className="text-[14px] font-medium px-6 py-3 rounded-lg text-white flex items-center gap-2 group" style={{ background: 'var(--brand)' }}>
@@ -557,8 +557,8 @@ export default function LandingPage() {
           </div>
           <div className="pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-4" style={{ borderColor: 'var(--border-subtle)' }}>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded flex items-center justify-center text-white font-semibold text-[10px]" style={{ background: 'var(--brand)' }}>JB</div>
-              <span className="text-[13px]" style={{ color: 'var(--text-quaternary)' }}>© 2026 JobBoxOS. All rights reserved.</span>
+              <div className="w-6 h-6 rounded flex items-center justify-center text-white font-semibold text-[10px]" style={{ background: 'var(--brand)' }}>GA</div>
+              <span className="text-[13px]" style={{ color: 'var(--text-quaternary)' }}>© 2026 GetAutoApply. All rights reserved.</span>
             </div>
             <div className="flex items-center gap-4">
               <a href="#" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>Twitter</a>

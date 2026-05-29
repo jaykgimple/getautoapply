@@ -20,9 +20,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className="w-56 flex-shrink-0 border-r flex flex-col" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-panel)' }}>
         <div className="px-4 py-4 border-b flex items-center gap-2" style={{ borderColor: 'var(--border-subtle)' }}>
           <div className="w-7 h-7 rounded-md flex items-center justify-center text-white font-semibold text-xs" style={{ background: 'var(--brand)' }}>
-            JB
+            GA
           </div>
-          <span className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>JobBoxOS</span>
+          <span className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>GetAutoApply</span>
         </div>
 
         <nav className="flex-1 px-2 py-3 space-y-0.5">

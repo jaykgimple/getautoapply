@@ -37,10 +37,10 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-semibold text-sm" style={{ background: 'var(--brand)' }}>JB</div>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-semibold text-sm" style={{ background: 'var(--brand)' }}>GA</div>
           </Link>
           <h1 className="text-[20px] font-medium" style={{ color: 'var(--text-primary)' }}>Welcome back</h1>
-          <p className="text-[14px] mt-1" style={{ color: 'var(--text-tertiary)' }}>Sign in to your JobBoxOS account</p>
+          <p className="text-[14px] mt-1" style={{ color: 'var(--text-tertiary)' }}>Sign in to your GetAutoApply account</p>
         </div>
 
         <form className="space-y-3" onSubmit={handleSubmit}>

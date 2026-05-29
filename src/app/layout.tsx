@@ -1,8 +1,8 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'JobBoxOS — AI Job Search Engine',
-  description: 'AI-powered job search, auto-tailored resumes, and automated applications.',
+  title: 'GetAutoApply — AI Auto Apply Jobs',
+  description: 'Auto-apply to jobs with AI. One-click applications, AI-tailored resumes, and job search tracking.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
