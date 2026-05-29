@@ -10,6 +10,8 @@ const SECTIONS = [
 ]
 
 export default function LinkedInAnalyzer() {
+  const [mode, setMode] = useState<'url' | 'paste'>('url')
+  const [linkedinUrl, setLinkedinUrl] = useState('')
   const [sections, setSections] = useState<Record<string, string>>({
     headline: '',
     about: '',
@@ -17,11 +19,45 @@ export default function LinkedInAnalyzer() {
     skills: '',
   })
   const [loading, setLoading] = useState(false)
+  const [fetching, setFetching] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<any>(null)
 
   const updateSection = (key: string, value: string) => {
     setSections(prev => ({ ...prev, [key]: value }))
+  }
+
+  const handleFetchProfile = async () => {
+    if (!linkedinUrl.trim()) {
+      setError('Please enter a LinkedIn profile URL.')
+      return
+    }
+    setFetching(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/ai/linkedin/fetch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: linkedinUrl.trim() }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to fetch profile')
+
+      // Pre-fill sections with fetched data
+      if (data.profile) {
+        setSections({
+          headline: data.profile.headline || '',
+          about: data.profile.about || '',
+          experience: data.profile.experience || '',
+          skills: data.profile.skills || '',
+        })
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch LinkedIn profile. You can paste your info manually below.')
+    } finally {
+      setFetching(false)
+    }
   }
 
   const handleAnalyze = async () => {
@@ -45,12 +81,10 @@ export default function LinkedInAnalyzer() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ profileText }),
       })
-
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}))
         throw new Error(errData.error || 'Analysis failed')
       }
-
       const data = await response.json()
       setResult(data.analysis)
     } catch (err: any) {
@@ -80,11 +114,74 @@ export default function LinkedInAnalyzer() {
         <div className="mb-6">
           <h1 className="text-[24px] font-medium tracking-tight" style={{ color: 'var(--text-primary)' }}>LinkedIn Profile Analyzer</h1>
           <p className="text-[14px] mt-1" style={{ color: 'var(--text-tertiary)' }}>
-            Paste your LinkedIn profile content below. Our AI will score it against recruiter expectations and recommend improvements.
+            AI scores your profile against recruiter expectations and recommends improvements.
           </p>
         </div>
 
-        {/* Input sections */}
+        {/* Mode selector */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => { setMode('url'); setError(''); setResult(null) }}
+            className="text-[13px] font-medium px-4 py-2 rounded-lg transition-colors"
+            style={{
+              background: mode === 'url' ? 'var(--brand)' : 'var(--bg-surface)',
+              color: mode === 'url' ? '#fff' : 'var(--text-secondary)',
+              border: '1px solid',
+              borderColor: mode === 'url' ? 'var(--brand)' : 'var(--border-subtle)',
+            }}
+          >
+            Option 1: Profile URL
+          </button>
+          <button
+            onClick={() => { setMode('paste'); setError(''); setResult(null) }}
+            className="text-[13px] font-medium px-4 py-2 rounded-lg transition-colors"
+            style={{
+              background: mode === 'paste' ? 'var(--brand)' : 'var(--bg-surface)',
+              color: mode === 'paste' ? '#fff' : 'var(--text-secondary)',
+              border: '1px solid',
+              borderColor: mode === 'paste' ? 'var(--brand)' : 'var(--border-subtle)',
+            }}
+          >
+            Option 2: Paste Info
+          </button>
+        </div>
+
+        {/* Option 1: URL */}
+        {mode === 'url' && (
+          <div className="rounded-lg border p-5 mb-6" style={{ background: 'var(--bg-panel)', borderColor: 'var(--border-subtle)' }}>
+            <h3 className="text-[14px] font-medium mb-3" style={{ color: 'var(--text-primary)' }}>Paste LinkedIn Profile URL</h3>
+            <p className="text-[12px] mb-3" style={{ color: 'var(--text-tertiary)' }}>
+              Enter your public LinkedIn profile URL. We&apos;ll fetch your profile and auto-fill the fields below for review.
+            </p>
+            <input
+              type="url"
+              value={linkedinUrl}
+              onChange={e => setLinkedinUrl(e.target.value)}
+              placeholder="https://www.linkedin.com/in/your-name"
+              className="w-full px-3 py-2 rounded-lg border text-[14px] focus:outline-none mb-3"
+              style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+            />
+            <button
+              onClick={handleFetchProfile}
+              disabled={fetching}
+              className="text-[13px] font-medium px-5 py-2 rounded-lg text-white transition-colors hover:opacity-90 disabled:opacity-50"
+              style={{ background: 'var(--brand)' }}
+            >
+              {fetching ? 'Fetching...' : 'Fetch Profile'}
+            </button>
+          </div>
+        )}
+
+        {/* Option 2: Manual paste intro */}
+        {mode === 'paste' && (
+          <div className="mb-4">
+            <p className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
+              Paste your LinkedIn profile sections below. You can find these on your LinkedIn profile page — just copy and paste each section.
+            </p>
+          </div>
+        )}
+
+        {/* Editable sections (shown for both modes; auto-filled for URL mode) */}
         <div className="space-y-4 mb-6">
           {SECTIONS.map(({ key, label, placeholder }) => (
             <div key={key}>

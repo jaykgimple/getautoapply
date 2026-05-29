@@ -110,7 +110,7 @@ const steps = [
   {
     num: '01',
     title: 'Connect LinkedIn & upload your resume',
-    description: 'Link your LinkedIn profile for AI analysis — get a recruiter attractiveness score, profile enhancement recommendations, and keyword optimization tips. Upload your current resume or build one from scratch.',
+    description: 'Paste your LinkedIn URL or manually enter your profile info. Get an AI recruiter attractiveness score, profile enhancement recommendations, and missing keyword tips. Upload your resume or build one from scratch.',
   },
   {
     num: '02',
