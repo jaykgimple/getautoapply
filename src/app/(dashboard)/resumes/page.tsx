@@ -247,7 +247,7 @@ export default function ResumesPage() {
 
         {/* ── Add/Edit Form ── */}
         {showForm && (
-          <div className="mb-6 rounded-lg border p-5" style={{ background: 'var(' }, borderColor: 'var(--border-subtle)' }}>
+          <div className="mb-6 rounded-lg border p-5" style={{ background: 'var(--bg-panel)', borderColor: 'var(--border-subtle)' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[15px] font-medium" style={{ color: 'var(--text-primary)' }}>{editResume ? 'Edit Resume' : 'Add New Resume'}</h3>
               <button onClick={resetForm} className="text-[12px]" style={{ color: 'var(--text-quaternary)' }}>✕ Close</button>
