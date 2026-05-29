@@ -1,105 +1,102 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient as createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import supabaseAdmin from '@/lib/supabase/admin'
 
-export async function POST(req: NextRequest) {
+export const dynamic = 'force-dynamic'
+
+// GET: fetch the user's stored LinkedIn profile data
+export async function GET() {
   try {
-    const body = await req.json()
-    const { url } = body
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { get: (name: string) => cookieStore.get(name)?.value } }
+    )
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-    if (!url || !url.includes('linkedin.com/in/')) {
-      return NextResponse.json({ error: 'Please provide a valid LinkedIn profile URL (e.g. https://www.linkedin.com/in/yourname)' }, { status: 400 })
+    const { data: profile, error } = await supabaseAdmin
+      .from('profiles')
+      .select('linkedin_connected, linkedin_headline, linkedin_summary, linkedin_raw_profile, linkedin_profile_url, linkedin_profile_image_url, linkedin_first_name, linkedin_last_name')
+      .eq('id', user.id)
+      .single()
+
+    if (error || !profile?.linkedin_connected) {
+      return NextResponse.json({ connected: false, error: 'LinkedIn not connected' }, { status: 404 })
     }
 
-    // Fetch the public LinkedIn profile page
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
+    const raw = profile.linkedin_raw_profile || {}
+
+    return NextResponse.json({
+      connected: true,
+      profile: {
+        name: `${profile.linkedin_first_name || ''} ${profile.linkedin_last_name || ''}`.trim(),
+        headline: profile.linkedin_headline || '',
+        summary: profile.linkedin_summary || '',
+        profileUrl: profile.linkedin_profile_url || '',
+        imageUrl: profile.linkedin_profile_image_url || '',
+        experience: raw.experience || [],
+        skills: raw.skills || [],
       },
     })
-
-    if (!response.ok) {
-      return NextResponse.json({
-        error: `Could not fetch LinkedIn profile (${response.status}). Make sure your profile is set to public, or use Option 2 to paste manually.`,
-      }, { status: 400 })
-    }
-
-    const html = await response.text()
-
-    // Extract profile data from LinkedIn page's embedded JSON-LD or meta tags
-    const profile: Record<string, string> = {}
-
-    // Try to extract from JSON-LD structured data
-    const jsonLdMatch = html.match(/<script type="\/ld\+json">([\s\S]*?)<\/script>/gi)
-    if (jsonLdMatch) {
-      for (const script of jsonLdMatch) {
-        try {
-          const jsonStr = script.replace(/<[^>]+>/g, '').trim()
-          const data = JSON.parse(jsonStr)
-
-          const profileData = Array.isArray(data) ? data.find((d: any) => d['@type'] === 'Person') || data[0] : data
-
-          if (profileData) {
-            if (profileData.description) profile.about = profileData.description
-            if (profileData.jobTitle) profile.headline = Array.isArray(profileData.jobTitle) ? profileData.jobTitle.join(', ') : profileData.jobTitle
-            if (profileData.name && profileData.jobTitle) {
-              const titles = Array.isArray(profileData.jobTitle) ? profileData.jobTitle : [profileData.jobTitle]
-              profile.headline = `${titles[0]}`
-            }
-          }
-          if (profileData.hasOccupation) {
-            const occupations = Array.isArray(profileData.hasOccupation) ? profileData.hasOccupation : [profileData.hasOccupation]
-            profile.experience = occupations
-              .map((o: any) => `${o.name || o.jobTitle || ''}${o.worksFor?.name ? ` at ${o.worksFor.name}` : ''}`)
-              .filter(Boolean)
-              .join('\n')
-          }
-          if (profileData.knowsAbout) {
-            profile.skills = Array.isArray(profileData.knowsAbout) ? profileData.knowsAbout.join(', ') : profileData.knowsAbout
-          }
-        } catch {
-          // Continue trying other scripts
-        }
-      }
-    }
-
-    // Fallback: extract from meta tags
-    if (!profile.about) {
-      const descMatch = html.match(/<meta\s+(?:name="description"|property="og:description")\s+content="([^"]*?)"/i)
-      if (descMatch) profile.about = descMatch[1]
-    }
-
-    if (!profile.headline) {
-      const titleMatch = html.match(/<title>([^<]*?)<\/title>/i)
-      if (titleMatch) {
-        // LinkedIn titles are like "John Doe - Title - LinkedIn"
-        const titleParts = titleMatch[1].split(' - ')
-        if (titleParts.length >= 2) {
-          profile.headline = titleParts.slice(1, -1).join(' - ')
-        }
-      }
-    }
-
-    // Also try to extract skills from page content via common patterns
-    if (!profile.skills) {
-      // Look for skills section patterns
-      const skillsSection = html.match(/Skills[\s\S]{0,500}?>([^<]{3,200})</i)
-      if (skillsSection) {
-        profile.skills = skillsSection[1].trim()
-      }
-    }
-
-    // If we still have very little data, the profile might be gated
-    const hasData = Object.values(profile).some(v => v.trim().length > 10)
-
-    if (!hasData) {
-      return NextResponse.json({
-        error: 'Could not extract profile data. LinkedIn may require login to view this profile. Please set your profile to public, or use Option 2 to paste your info manually.',
-      }, { status: 422 })
-    }
-
-    return NextResponse.json({ profile })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message || 'Failed to fetch profile' }, { status: 500 })
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
+}
+
+// POST: re-fetch fresh profile from LinkedIn API (if token is still valid)
+export async function POST() {
+  try {
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { get: (name: string) => cookieStore.get(name)?.value } }
+    )
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+
+    // Get the stored token
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('linkedin_token, linkedin_raw_profile')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile?.linkedin_token) {
+      return NextResponse.json({ error: 'No LinkedIn token. Please reconnect.' }, { status: 401 })
+    }
+
+    // Try to fetch fresh data — if token expired, this will fail
+    const profileRes = await fetch(
+      'https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName,localizedHeadline)',
+      { headers: { Authorization: `Bearer ${profile.linkedin_token}` } }
+    )
+
+    if (!profileRes.ok) {
+      // Token expired — mark as disconnected
+      await supabaseAdmin.from('profiles').update({
+        linkedin_connected: false,
+        linkedin_token: null,
+      }).eq('id', user.id)
+      return NextResponse.json({ error: 'LinkedIn token expired. Please reconnect.', expired: true }, { status: 401 })
+    }
+
+    const fresh = await profileRes.json()
+
+    // Update stored data
+    await supabaseAdmin.from('profiles').update({
+      linkedin_first_name: fresh.localizedFirstName || '',
+      linkedin_last_name: fresh.localizedLastName || '',
+      linkedin_headline: fresh.localizedHeadline || '',
+      linkedin_raw_profile: { ...profile.linkedin_raw_profile, refreshed: fresh },
+      updated_at: new Date().toISOString(),
+    }).eq('id', user.id)
+
+    return NextResponse.json({ connected: true, message: 'Profile refreshed' })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
   }
 }
