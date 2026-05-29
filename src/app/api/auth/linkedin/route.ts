@@ -11,7 +11,6 @@ const LINKEDIN_REDIRECT_URI = process.env.LINKEDIN_REDIRECT_URI!
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey, { db: { schema: 'public' } })
 
-// Step 1: Exchange auth code for access token
 async function getLinkedInAccessToken(code: string) {
   const body = new URLSearchParams({
     grant_type: 'authorization_code',
@@ -33,62 +32,51 @@ async function getLinkedInAccessToken(code: string) {
   return res.json() as Promise<{ access_token: string; expires_in: number }>
 }
 
-// Step 2: Fetch profile data using access token
 async function fetchLinkedInProfile(accessToken: string) {
-  // Core profile: id, firstName, lastName, headline, profilePicture
-  const profileRes = await fetch(
-    'https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName,localizedHeadVanityName,profilePicture(displayImage~:playableStreams))',
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  )
-  if (!profileRes.ok) throw new Error(`LinkedIn profile fetch failed: ${profileRes.status}`)
-  const profile = await profileRes.json()
+  // Use the OpenID Connect userinfo endpoint (works with openid + profile + email scopes)
+  const userinfoRes = await fetch('https://api.linkedin.com/v2/userinfo', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
 
-  // About/summary via liteProfile+ or positions API
-  // Experience
-  let experience: string[] = []
-  try {
-    const expRes = await fetch(
-      'https://api.linkedin.com/v2/positions?start=0&count=10',
+  if (!userinfoRes.ok) {
+    // Fallback to lite profile
+    const liteRes = await fetch(
+      'https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName,localizedHeadline,vanityName,profilePicture(displayImage~:playableStreams))',
       { headers: { Authorization: `Bearer ${accessToken}` } }
     )
-    if (expRes.ok) {
-      const expData = await expRes.json()
-      if (expData.elements) {
-        experience = expData.elements.map((e: any) => {
-          const title = e.title || ''
-          const company = e.companyName || e.company?.name || ''
-          const desc = e.description || ''
-          return `${title}${company ? ` at ${company}` : ''}${desc ? `\n${desc}` : ''}`
-        })
-      }
-    }
-  } catch { /* experience is optional */ }
+    if (!liteRes.ok) throw new Error(`LinkedIn profile fetch failed: ${liteRes.status}`)
+    const p = await liteRes.json()
+    return parseLiteProfile(p)
+  }
 
-  // Skills
-  let skills: string[] = []
+  const info = await userinfoRes.json()
+
+  // Profile image extraction
+  let imageUrl = ''
   try {
-    const skillsRes = await fetch(
-      'https://api.linkedin.com/v2/skills?start=0&count=50',
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    )
-    if (skillsRes.ok) {
-      const skillsData = await skillsRes.json()
-      if (skillsData.elements) {
-        skills = skillsData.elements.map((s: any) => s.name?.localized?.en_US || s.name || '').filter(Boolean)
-      }
-    }
-  } catch { /* skills is optional */ }
+    const picData = info.picture || ''
+    imageUrl = typeof picData === 'string' ? picData : ''
+  } catch { /* optional */ }
 
-  // Vanity name / public URL
-  const vanityName = profile.localizedVanityName || profile.id
-  const profileUrl = `https://www.linkedin.com/in/${vanityName}`
+  return {
+    id: info.sub || info.id || '',
+    firstName: info.given_name || '',
+    lastName: info.family_name || '',
+    headline: info.sub || '',  // userinfo doesn't include headline; would need separate call
+    summary: '',
+    profileUrl: `https://www.linkedin.com/in/${info.sub || ''}`,
+    imageUrl,
+    email: info.email || '',
+    experience: [],
+    skills: [],
+  }
+}
 
-  // Profile image
+function parseLiteProfile(profile: any) {
   let imageUrl = ''
   try {
     const imgData = profile.profilePicture?.['displayImage~']?.elements
     if (imgData?.length) {
-      // Get the largest resolution
       const sorted = [...imgData].sort((a: any, b: any) => {
         const aSize = (a.data?.['com.linkedin.digitalmedia.mediaartifact.StillImage']?.displaySize?.width || 0)
         const bSize = (b.data?.['com.linkedin.digitalmedia.mediaartifact.StillImage']?.displaySize?.width || 0)
@@ -96,18 +84,19 @@ async function fetchLinkedInProfile(accessToken: string) {
       })
       imageUrl = sorted[0]?.identifiers?.[0]?.identifier || ''
     }
-  } catch { /* image is optional */ }
+  } catch { /* optional */ }
 
   return {
     id: profile.id,
     firstName: profile.localizedFirstName || '',
     lastName: profile.localizedLastName || '',
     headline: profile.localizedHeadline || '',
-    summary: profile.localizedSummary || '',
-    profileUrl,
+    summary: '',
+    profileUrl: `https://www.linkedin.com/in/${profile.vanityName || profile.id}`,
     imageUrl,
-    experience,
-    skills,
+    email: '',
+    experience: [],
+    skills: [],
   }
 }
 
@@ -115,7 +104,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const code = searchParams.get('code')
-    const state = searchParams.get('state') // contains user_id
+    const state = searchParams.get('state')
     const error = searchParams.get('error')
 
     if (error) {
@@ -128,31 +117,27 @@ export async function GET(req: NextRequest) {
 
     const userId = state
 
-    // Exchange code for token
     const tokenData = await getLinkedInAccessToken(code)
     const accessToken = tokenData.access_token
 
-    // Fetch profile
-    const profile = await fetchLinkedInProfile(accessToken)
+    const linkedinProfile = await fetchLinkedInProfile(accessToken)
 
-    // Save to Supabase profiles table
     await supabase.from('profiles').upsert({
       id: userId,
       linkedin_connected: true,
-      linkedin_id: profile.id,
-      linkedin_first_name: profile.firstName,
-      linkedin_last_name: profile.lastName,
-      linkedin_headline: profile.headline,
-      linkedin_summary: profile.summary,
-      linkedin_profile_url: profile.profileUrl,
-      linkedin_profile_image_url: profile.imageUrl,
-      linkedin_raw_profile: profile,
+      linkedin_id: linkedinProfile.id,
+      linkedin_first_name: linkedinProfile.firstName,
+      linkedin_last_name: linkedinProfile.lastName,
+      linkedin_headline: linkedinProfile.headline,
+      linkedin_summary: linkedinProfile.summary,
+      linkedin_profile_url: linkedinProfile.profileUrl,
+      linkedin_profile_image_url: linkedinProfile.imageUrl,
+      linkedin_raw_profile: linkedinProfile,
       linkedin_token: accessToken,
       linkedin_connected_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
 
-    // Redirect back to LinkedIn Analyzer with success
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL || ''}/linkedin?linkedin_connected=true`)
   } catch (err: any) {
     console.error('LinkedIn OAuth error:', err)
@@ -160,31 +145,30 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// Generate the LinkedIn OAuth authorization URL
+// POST: Generate the LinkedIn OAuth authorization URL
 export async function POST() {
   try {
     if (!LINKEDIN_CLIENT_ID || !LINKEDIN_CLIENT_SECRET || !LINKEDIN_REDIRECT_URI) {
       return NextResponse.json({
-        error: 'LinkedIn OAuth is not configured. Set LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, and LINKEDIN_REDIRECT_URI env vars.',
+        error: 'LinkedIn OAuth not configured. Set LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, LINKEDIN_REDIRECT_URI env vars.',
       }, { status: 500 })
     }
 
     const { createServerClient } = await import('@supabase/ssr')
     const { cookies } = await import('next/headers')
     const cookieStore = await cookies()
-    const supabaseBrowser = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    const supabaseAnon = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
       cookies: {
         get: (name: string) => cookieStore.get(name)?.value,
-        set: (name: string, value: string) => cookieStore.set({ name, value }),
-        remove: (name: string) => cookieStore.set({ name, value: '' }),
+        set: (name: string, value: string) => { try { cookieStore.set({ name, value }) } catch {} },
+        remove: (name: string) => { try { cookieStore.set({ name, value: '' }) } catch {} },
       },
     })
-    const { data: { user } } = await supabaseBrowser.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
+    const { data: { user } } = await supabaseAnon.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-    const scopes = encodeURIComponent('r_liteprofile r_emailaddress')
+    // Use OpenID Connect scopes (recommended by LinkedIn for new apps)
+    const scopes = encodeURIComponent('openid profile email')
     const state = user.id
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(LINKEDIN_REDIRECT_URI)}&scope=${scopes}&state=${state}`
 

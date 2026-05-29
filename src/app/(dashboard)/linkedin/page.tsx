@@ -53,9 +53,10 @@ export default function LinkedInAnalyzer() {
     }
 
     // Check stored connection
-    fetch('/api/ai/linkedin/fetch')
-      .then(res => {
-        if (res.ok) setLinkedinStatus('connected')
+    fetch('/api/linkedin/status')
+      .then(res => res.json())
+      .then(data => {
+        if (data.connected) setLinkedinStatus('connected')
         else setLinkedinStatus('disconnected')
       })
       .catch(() => setLinkedinStatus('disconnected'))
@@ -63,8 +64,9 @@ export default function LinkedInAnalyzer() {
     // Listen for popup close — poll for connection status
     const interval = setInterval(async () => {
       try {
-        const res = await fetch('/api/ai/linkedin/fetch')
-        if (res.ok) {
+        const res = await fetch('/api/linkedin/status')
+        const data = await res.json()
+        if (data.connected) {
           setLinkedinStatus('connected')
           setLinkedinError('')
           clearInterval(interval)
@@ -107,9 +109,9 @@ export default function LinkedInAnalyzer() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/ai/linkedin/fetch')
+      const res = await fetch('/api/linkedin/status')
       const data = await res.json()
-      if (!res.ok) {
+      if (!data.connected) {
         if (data.expired) setLinkedinStatus('expired')
         throw new Error(data.error || 'Failed to load profile')
       }
