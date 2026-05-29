@@ -53,7 +53,6 @@ async function extractText(buffer: Buffer, mimeType: string, filename: string): 
     filename.endsWith('.docx')
   ) {
     try {
-      const { Document, Packer, Paragraph, TextRun } = await import('docx')
       const mammoth = await import('mammoth')
       const result = await mammoth.extractRawText({ buffer })
       return result.value
