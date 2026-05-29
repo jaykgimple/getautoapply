@@ -12,8 +12,13 @@ interface Job {
   salary_max: number | null
   status: string
   source: string
+  source_detail: string | null
   url: string | null
   description: string | null
+  job_type: string | null
+  is_remote: boolean
+  applied_date: string | null
+  match_score: number | null
   created_at: string
 }
 
@@ -105,7 +110,11 @@ export default function JobsPage() {
   const handleStatusChange = async (id: string, status: string) => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    await supabase.from('jobs').update({ status }).eq('id', id).eq('user_id', user.id)
+    const updates: any = { status }
+    if (status === 'applied') {
+      updates.applied_date = new Date().toISOString()
+    }
+    await supabase.from('jobs').update(updates).eq('id', id).eq('user_id', user.id)
     fetchJobs()
   }
 
@@ -197,14 +206,20 @@ export default function JobsPage() {
             {filteredJobs.map((job) => (
               <div key={job.id} className="rounded-lg border p-4 flex items-center gap-4 group" style={{ background: 'var(--bg-panel)', borderColor: 'var(--border-subtle)' }}>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h3 className="text-[14px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>{job.title}</h3>
+                    {job.is_remote && <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e' }}>Remote</span>}
                     <span className="text-[11px] px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-surface)', color: 'var(--text-quaternary)' }}>{job.source}</span>
+                    {job.source_detail && job.source_detail !== job.source && (
+                      <span className="text-[10px]" style={{ color: 'var(--text-quaternary)' }}>via {job.source_detail}</span>
+                    )}
                   </div>
                   <p className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
                     {job.company_name}
                     {job.location ? ` · ${job.location}` : ''}
+                    {job.job_type ? ` · ${job.job_type}` : ''}
                     {(job.salary_min || job.salary_max) ? ` · $${job.salary_min || '?'} - $${job.salary_max || '?'}` : ''}
+                    {job.applied_date ? ` · Applied ${new Date(job.applied_date).toLocaleDateString()}` : ''}
                   </p>
                   {job.description && <p className="text-[12px] mt-1 line-clamp-2" style={{ color: 'var(--text-quaternary)' }}>{job.description}</p>}
                 </div>
