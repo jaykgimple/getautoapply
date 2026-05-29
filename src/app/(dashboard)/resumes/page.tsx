@@ -32,7 +32,7 @@ export default function ResumesPage() {
     if (!user) { setLoading(false); return }
     const [resumesRes, jobsRes] = await Promise.all([
       supabase.from('resumes').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('jobs').select('id, title, description').eq('user_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('jobs').select('id, title, description, company').eq('user_id', user.id).order('created_at', { ascending: false }),
     ])
     if (resumesRes.data) setResumes(resumesRes.data)
     if (jobsRes.data) setJobs(jobsRes.data)
