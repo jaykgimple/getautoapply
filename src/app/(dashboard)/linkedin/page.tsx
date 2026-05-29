@@ -42,7 +42,6 @@ export default function LinkedInAnalyzer() {
     if (params.get('linkedin_connected') === 'true') {
       setLinkedinStatus('connected')
       setLinkedinError('')
-      // Clean URL
       window.history.replaceState({}, '', '/linkedin')
       return
     }
@@ -60,6 +59,20 @@ export default function LinkedInAnalyzer() {
         else setLinkedinStatus('disconnected')
       })
       .catch(() => setLinkedinStatus('disconnected'))
+
+    // Listen for popup close — poll for connection status
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/ai/linkedin/fetch')
+        if (res.ok) {
+          setLinkedinStatus('connected')
+          setLinkedinError('')
+          clearInterval(interval)
+        }
+      } catch { /* not connected yet */ }
+    }, 2000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const updateSection = (key: string, value: string) => {
