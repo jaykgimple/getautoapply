@@ -1,41 +1,56 @@
 {
   "manifest_version": 3,
-  "name": "JobBoxOS ApplyAssist",
-  "version": "0.1.0",
-  "description": "Auto-fill job applications with your JobBoxOS profile",
-  "permissions": ["activeTab", "storage", "scripting"],
+  "name": "GetAutoApply — Auto-Fill",
+  "version": "1.0.0",
+  "description": "Auto-fill job application forms with your resume data. Works on LinkedIn, Indeed, Greenhouse, Lever, Workday, and more.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
   "host_permissions": [
     "https://*.linkedin.com/*",
     "https://*.indeed.com/*",
     "https://*.greenhouse.io/*",
     "https://*.lever.co/*",
     "https://*.workday.com/*",
+    "https://*.myworkdayjobs.com/*",
     "https://*.smartrecruiters.com/*",
     "https://*.icims.com/*",
     "https://*.taleo.net/*",
-    "https://jobbox-os.vercel.app/*"
+    "https://*.jobs.ashbyhq.com/*",
+    "https://*.applytojob.com/*",
+    "https://getautoapply.vercel.app/*"
   ],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "popup/popup.html",
     "default_icon": {
-      "16": "icon16.png",
-      "48": "icon48.png",
-      "128": "icon128.png"
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
     }
   },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "background": {
-    "service_worker": "background.ts"
+    "service_worker": "background/service-worker.js",
+    "type": "module"
   },
   "content_scripts": [
     {
-      "matches": ["https://*/*", "http://*/*"],
-      "js": ["content.ts"],
+      "matches": ["<all_urls>"],
+      "js": ["content/content-script.js"],
+      "css": ["content/content-style.css"],
       "run_at": "document_idle"
     }
   ],
-  "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
-  }
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

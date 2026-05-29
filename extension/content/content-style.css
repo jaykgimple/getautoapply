@@ -1,0 +1,80 @@
+/* GetAutoApply Extension Styles */
+
+#ga-autofill-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999999;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.ga-fab-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #5e6ad2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(94, 106, 210, 0.4);
+  transition: all 0.2s;
+  color: white;
+}
+
+.ga-fab-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(94, 106, 210, 0.5);
+}
+
+.ga-fab-menu {
+  display: none;
+  position: absolute;
+  bottom: 56px;
+  right: 0;
+  background: #1a1a2e;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 6px;
+  min-width: 180px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.ga-menu-visible {
+  display: block;
+}
+
+.ga-fab-menu-item {
+  color: #e4e4e7;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ga-fab-menu-item:hover {
+  background: rgba(94, 106, 210, 0.2);
+  color: white;
+}
+
+#ga-toast {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  background: #1a1a2e;
+  color: #e4e4e7;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 9999999;
+  animation: ga-slide-in 0.3s ease;
+  border: 1px solid rgba(94, 106, 210, 0.3);
+}
+
+@keyframes ga-slide-in {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
