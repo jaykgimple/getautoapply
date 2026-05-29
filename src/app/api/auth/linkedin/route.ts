@@ -169,12 +169,14 @@ export async function POST() {
       }, { status: 500 })
     }
 
-    const { createClient: createBrowserClient } = await import('@supabase/ssr')
+    const { createServerClient } = await import('@supabase/ssr')
     const { cookies } = await import('next/headers')
     const cookieStore = await cookies()
-    const supabaseBrowser = createBrowserClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    const supabaseBrowser = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
       cookies: {
         get: (name: string) => cookieStore.get(name)?.value,
+        set: (name: string, value: string) => cookieStore.set({ name, value }),
+        remove: (name: string) => cookieStore.set({ name, value: '' }),
       },
     })
     const { data: { user } } = await supabaseBrowser.auth.getUser()
