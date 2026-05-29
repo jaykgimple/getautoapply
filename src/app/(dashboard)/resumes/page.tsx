@@ -113,7 +113,7 @@ export default function ResumesPage() {
           resumeText,
           jobTitle: job.title,
           jobDescription: jobDesc,
-          company: job.company_name,
+          company: job.company,
         }),
       })
 
