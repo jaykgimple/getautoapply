@@ -452,7 +452,7 @@ export default function LandingPage() {
                     ))}
                   </ul>
                   <Link
-                    href={plan.name === 'Teams' ? '#contact' : '/signup'}
+                    href={plan.name === 'Teams' ? '/signup' : '/signup'}
                     className="block w-full text-center text-[14px] font-medium py-2.5 rounded-lg transition-colors"
                     style={plan.highlighted
                       ? { background: 'var(--brand)', color: 'white' }
@@ -525,33 +525,17 @@ export default function LandingPage() {
             <div>
               <p className="text-[13px] font-medium mb-3" style={{ color: 'var(--text-primary)' }}>Product</p>
               <ul className="space-y-2">
-                {['Features', 'Pricing', 'Chrome Extension', 'Changelog'].map(l => (
-                  <li key={l}><a href="#" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>{l}</a></li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className="text-[13px] font-medium mb-3" style={{ color: 'var(--text-primary)' }}>Company</p>
-              <ul className="space-y-2">
-                {['About', 'Blog', 'Careers', 'Contact'].map(l => (
-                  <li key={l}><a href="#" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>{l}</a></li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className="text-[13px] font-medium mb-3" style={{ color: 'var(--text-primary)' }}>Resources</p>
-              <ul className="space-y-2">
-                {['Docs', 'API', 'Community', 'Status'].map(l => (
-                  <li key={l}><a href="#" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>{l}</a></li>
-                ))}
+                <li><a href="#features" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>Features</a></li>
+                <li><a href="#pricing" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>Pricing</a></li>
+                <li><a href="#faq" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>FAQ</a></li>
               </ul>
             </div>
             <div>
               <p className="text-[13px] font-medium mb-3" style={{ color: 'var(--text-primary)' }}>Legal</p>
               <ul className="space-y-2">
-                {['Privacy', 'Terms', 'Security', 'GDPR'].map(l => (
-                  <li key={l}><a href="#" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>{l}</a></li>
-                ))}
+                <li><a href="/privacy" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>Privacy Policy</a></li>
+                <li><a href="/login" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>Log In</a></li>
+                <li><a href="/signup" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>Sign Up</a></li>
               </ul>
             </div>
           </div>
@@ -560,11 +544,9 @@ export default function LandingPage() {
               <div className="w-6 h-6 rounded flex items-center justify-center text-white font-semibold text-[10px]" style={{ background: 'var(--brand)' }}>GA</div>
               <span className="text-[13px]" style={{ color: 'var(--text-quaternary)' }}>© 2026 GetAutoApply. All rights reserved.</span>
             </div>
-            <div className="flex items-center gap-4">
-              <a href="#" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>Twitter</a>
-              <a href="#" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>GitHub</a>
-              <a href="#" className="text-[13px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>Discord</a>
-            </div>
+          <div className="flex items-center gap-4">
+            <span className="text-[13px]" style={{ color: 'var(--text-quaternary)' }}>Built with ♥ for job seekers</span>
+          </div>
           </div>
         </div>
       </footer>

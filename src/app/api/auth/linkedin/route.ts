@@ -108,11 +108,11 @@ export async function GET(req: NextRequest) {
     const error = searchParams.get('error')
 
     if (error) {
-      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL || ''}/linkedin?linkedin_error=${error}`)
+      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL || 'https://getautoapply.vercel.app'}/settings?linkedin_error=${error}`)
     }
 
     if (!code || !state) {
-      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL || ''}/linkedin?linkedin_error=missing_params`)
+      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL || 'https://getautoapply.vercel.app'}/settings?linkedin_error=missing_params`)
     }
 
     const userId = state
@@ -122,7 +122,7 @@ export async function GET(req: NextRequest) {
 
     const linkedinProfile = await fetchLinkedInProfile(accessToken)
 
-    await supabase.from('profiles').upsert({
+    const { error: upsertError } = await supabase.from('profiles').upsert({
       id: userId,
       linkedin_connected: true,
       linkedin_id: linkedinProfile.id,
@@ -138,10 +138,17 @@ export async function GET(req: NextRequest) {
       updated_at: new Date().toISOString(),
     })
 
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL || ''}/linkedin?linkedin_connected=true`)
+    if (upsertError) {
+      console.error('LinkedIn upsert error:', upsertError)
+      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL || 'https://getautoapply.vercel.app'}/settings?linkedin_error=${encodeURIComponent(upsertError.message)}`)
+    }
+
+    console.log('LinkedIn connected for user:', userId)
+
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL || 'https://getautoapply.vercel.app'}/settings?linkedin_connected=true`)
   } catch (err: any) {
     console.error('LinkedIn OAuth error:', err)
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL || ''}/linkedin?linkedin_error=${encodeURIComponent(err.message || 'unknown')}`)
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL || 'https://getautoapply.vercel.app'}/settings?linkedin_error=${encodeURIComponent(err.message || 'unknown')}`)
   }
 }
 

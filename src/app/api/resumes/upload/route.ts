@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 async function getUser(req: NextRequest) {
   try {
     const cookieStore = await cookies()
-    const supabase = createServerClient(supabaseUrl, supabaseServiceKey, {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
-        get(name: string) { return cookieStore.get(name)?.value },
-        set(name: string, value: string, options: CookieOptions) { try { cookieStore.set(name, value, options) } catch {} },
-        remove(name: string, options: CookieOptions) { try { cookieStore.set(name, '', { ...options, maxAge: 0 }) } catch {} },
+        get: (name: string) => cookieStore.get(name)?.value,
+        set: () => {},
+        remove: () => {},
       },
     })
     const { data: { user } } = await supabase.auth.getUser()
