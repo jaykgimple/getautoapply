@@ -31,7 +31,7 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editJob, setEditJob] = useState<Job | null>(null)
-  const [form, setForm] = useState({ title: '', company_name: '', location: '', url: '', description: '', source: 'manual', salary_min: '', salary_max: '' })
+  const [form, setForm] = useState({ title: '', company: '', location: '', job_url: '', description: '', source: 'manual', salary_min: '', salary_max: '' })
   const [formLoading, setFormLoading] = useState(false)
   const [error, setError] = useState('')
   const supabase = createClient()
@@ -52,7 +52,7 @@ export default function JobsPage() {
   useEffect(() => { fetchJobs() }, [fetchJobs])
 
   const resetForm = () => {
-    setForm({ title: '', company_name: '', location: '', url: '', description: '', source: 'manual', salary_min: '', salary_max: '' })
+    setForm({ title: '', company: '', location: '', job_url: '', description: '', source: 'manual', salary_min: '', salary_max: '' })
     setEditJob(null)
     setShowForm(false)
     setError('')
@@ -60,8 +60,8 @@ export default function JobsPage() {
 
   const handleEdit = (job: Job) => {
     setForm({
-      title: job.title, company_name: job.company_name, location: job.location || '',
-      url: job.url || '', description: job.description || '', source: job.source,
+      title: job.title, company: job.company_name, location: job.location || '',
+      job_url: job.url || '', description: job.description || '', source: job.source,
       salary_min: job.salary_min ? String(job.salary_min) : '',
       salary_max: job.salary_max ? String(job.salary_max) : '',
     })
@@ -154,14 +154,14 @@ export default function JobsPage() {
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input type="text" placeholder="Job title *" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required className="w-full px-3 py-2 rounded-lg border text-[14px] focus:outline-none" style={inputStyle} />
-                <input type="text" placeholder="Company name *" value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} required className="w-full px-3 py-2 rounded-lg border text-[14px] focus:outline-none" style={inputStyle} />
+                <input type="text" placeholder="Company name *" value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} required className="w-full px-3 py-2 rounded-lg border text-[14px] focus:outline-none" style={inputStyle} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <input type="text" placeholder="Location" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} className="w-full px-3 py-2 rounded-lg border text-[14px] focus:outline-none" style={inputStyle} />
                 <input type="text" placeholder="Salary min" value={form.salary_min} onChange={e => setForm(f => ({ ...f, salary_min: e.target.value }))} className="w-full px-3 py-2 rounded-lg border text-[14px] focus:outline-none" style={inputStyle} />
                 <input type="text" placeholder="Salary max" value={form.salary_max} onChange={e => setForm(f => ({ ...f, salary_max: e.target.value }))} className="w-full px-3 py-2 rounded-lg border text-[14px] focus:outline-none" style={inputStyle} />
               </div>
-              <input type="url" placeholder="Job URL" value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} className="w-full px-3 py-2 rounded-lg border text-[14px] focus:outline-none" style={inputStyle} />
+              <input type="url" placeholder="Job URL" value={form.job_url} onChange={e => setForm(f => ({ ...f, job_url: e.target.value }))} className="w-full px-3 py-2 rounded-lg border text-[14px] focus:outline-none" style={inputStyle} />
               <textarea placeholder="Description" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} className="w-full px-3 py-2 rounded-lg border text-[14px] focus:outline-none resize-y" style={inputStyle} />
               <div className="flex items-center justify-between">
                 <select value={form.source} onChange={e => setForm(f => ({ ...f, source: e.target.value }))} className="px-3 py-2 rounded-lg border text-[14px]" style={inputStyle}>

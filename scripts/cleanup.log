@@ -1,0 +1,27 @@
+[00:00:01] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 687    │ 0        │ 687   │
+└────────┴──────────┴───────┘
+[01:00:01] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 709    │ 0        │ 709   │
+└────────┴──────────┴───────┘
+[02:00:01] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 758    │ 0        │ 758   │
+└────────┴──────────┴───────┘

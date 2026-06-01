@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 const SECTIONS = [
   { key: 'headline', label: 'Headline', placeholder: 'e.g. Senior Software Engineer | React | Node.js | Building scalable web apps', hint: 'Found at the top of your LinkedIn profile, below your name' },
@@ -36,10 +37,12 @@ export default function LinkedInAnalyzer() {
   const [result, setResult] = useState<any>(null)
   const [urlSaved, setUrlSaved] = useState(false)
 
+  const supabase = createClient()
+
   // Check LinkedIn connection status on mount + after OAuth redirect
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    if (params.get('linkedin_connected') === 'true') {
+    if (params.get('linkedin_linked') === 'true') {
       setLinkedinStatus('connected')
       setLinkedinError('')
       window.history.replaceState({}, '', '/linkedin')
@@ -52,29 +55,14 @@ export default function LinkedInAnalyzer() {
       return
     }
 
-    // Check stored connection
-    fetch('/api/linkedin/status')
-      .then(res => res.json())
-      .then(data => {
-        if (data.connected) setLinkedinStatus('connected')
+    // Check stored connection via profiles table
+    supabase.from('profiles')
+      .select('linkedin_connected')
+      .single()
+      .then((res: any) => {
+        if (res?.data?.linkedin_connected) setLinkedinStatus('connected')
         else setLinkedinStatus('disconnected')
-      })
-      .catch(() => setLinkedinStatus('disconnected'))
-
-    // Listen for popup close — poll for connection status
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch('/api/linkedin/status')
-        const data = await res.json()
-        if (data.connected) {
-          setLinkedinStatus('connected')
-          setLinkedinError('')
-          clearInterval(interval)
-        }
-      } catch { /* not connected yet */ }
-    }, 2000)
-
-    return () => clearInterval(interval)
+      }, () => setLinkedinStatus('disconnected'))
   }, [])
 
   const updateSection = (key: string, value: string) => {
@@ -86,20 +74,11 @@ export default function LinkedInAnalyzer() {
     setLinkedinConnecting(true)
     setLinkedinError('')
     try {
-      const res = await fetch('/api/auth/linkedin', { method: 'POST' })
-      const data = await res.json()
-      if (data.authUrl) {
-        // Open LinkedIn OAuth in a popup
-        const width = 520, height = 600
-        const left = (window.innerWidth - width) / 2
-        const top = (window.innerHeight - height) / 2
-        window.open(data.authUrl, 'linkedin_oauth', `width=${width},height=${height},top=${top},left=${left}`)
-      } else {
-        setLinkedinError(data.error || 'Could not initiate LinkedIn sign-in')
-      }
+      sessionStorage.setItem('linkedin_connect_return_to', '/linkedin')
+      const { error } = await supabase.auth.signInWithOAuth({ provider: 'linkedin_oidc', options: { redirectTo: 'https://getautoapply.vercel.app/auth/callback' } })
+      if (error) throw error
     } catch (err: any) {
       setLinkedinError(err.message)
-    } finally {
       setLinkedinConnecting(false)
     }
   }
@@ -109,25 +88,63 @@ export default function LinkedInAnalyzer() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/linkedin/status')
-      const data = await res.json()
-      if (!data.connected) {
-        if (data.expired) setLinkedinStatus('expired')
-        throw new Error(data.error || 'Failed to load profile')
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('linkedin_connected, linkedin_raw_profile')
+        .single()
+
+      if (error || !profile?.linkedin_connected) {
+        setLinkedinStatus('disconnected')
+        throw new Error('LinkedIn not connected')
       }
-      if (data.connected && data.profile) {
-        const p = data.profile
-        setSections({
-          headline: p.headline || '',
-          about: p.summary || '',
-          experience: (p.experience || []).join('\n\n'),
-          skills: (p.skills || []).join(', '),
-        })
+
+      const p = profile.linkedin_raw_profile as any
+      if (p) {
+        setSections(s => ({
+          ...s,
+          headline: p.headline || s.headline,
+          about: p.summary || s.about,
+          experience: (p.experience || []).join('\n\n') || s.experience,
+          skills: (p.skills || []).join(', ') || s.skills,
+        }))
       }
     } catch (err: any) {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // ─── OAuth: Disconnect LinkedIn ───
+  const handleDisconnectLinkedIn = async () => {
+    try {
+      const { data: identities } = await supabase.auth.getUserIdentities()
+      const linkedinIdentity = identities?.identities.find(i => i.provider === 'linkedin')
+      if (linkedinIdentity) {
+        const { error } = await supabase.auth.unlinkIdentity(linkedinIdentity)
+        if (error) throw error
+      }
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase.from('profiles').update({
+          linkedin_connected: false,
+          linkedin_id: null,
+          linkedin_first_name: null,
+          linkedin_last_name: null,
+          linkedin_headline: null,
+          linkedin_summary: null,
+          linkedin_profile_url: null,
+          linkedin_profile_image_url: null,
+          linkedin_raw_profile: null,
+          linkedin_token: null,
+          linkedin_connected_at: null,
+        }).eq('id', user.id)
+      }
+      setLinkedinStatus('disconnected')
+      setLinkedinError('')
+      setSections({ headline: '', about: '', experience: '', skills: '' })
+    } catch (err: any) {
+      setLinkedinError(err.message)
     }
   }
 
@@ -276,11 +293,11 @@ export default function LinkedInAnalyzer() {
                     <span className="text-[12px] font-medium">Connected</span>
                   </div>
                   <button
-                    onClick={handleConnectLinkedIn}
+                    onClick={handleDisconnectLinkedIn}
                     className="text-[12px] underline"
                     style={{ color: 'var(--text-tertiary)' }}
                   >
-                    Reconnect
+                    Disconnect
                   </button>
                 </div>
               )}

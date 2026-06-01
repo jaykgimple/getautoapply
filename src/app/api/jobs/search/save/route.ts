@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-/**
- * POST /api/jobs/search/save
- * Save a job from external search results into the user's jobs table
- * Body: { external_id, title, company_name, location, salary_min, salary_max, description, url, source, source_detail, job_type, is_remote }
- */
 export async function POST(req: NextRequest) {
   try {
     const cookieStore = await cookies()
@@ -25,30 +20,29 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json()
 
+    // Use base columns (company_name and url are generated)
     const job = {
       user_id: user.id,
       title: body.title || 'Untitled',
-      company_name: body.company_name || '',
+      company: body.company_name || '',
       location: body.location || null,
       salary_min: body.salary_min ? Number(body.salary_min) : null,
       salary_max: body.salary_max ? Number(body.salary_max) : null,
       description: body.description || null,
-      url: body.url || null,
+      job_url: body.url || null,
       source: body.source || 'search',
-      source_detail: body.source_detail || null,
       job_type: body.job_type || null,
-      is_remote: body.is_remote || false,
+      remote_type: body.is_remote ? 'remote' : 'onsite',
       status: 'saved',
-      created_at: new Date().toISOString(),
     }
 
-    // Check if already saved (by url or external_id)
-    if (job.url) {
+    // Check if already saved
+    if (job.job_url) {
       const { data: existing } = await supabase
         .from('jobs')
         .select('id')
         .eq('user_id', user.id)
-        .eq('url', job.url)
+        .eq('job_url', job.job_url)
         .limit(1)
       if (existing && existing.length > 0) {
         return NextResponse.json({ error: 'Job already saved', id: existing[0].id }, { status: 409 })

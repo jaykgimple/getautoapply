@@ -65,25 +65,6 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [linkedinMessage, setLinkedinMessage] = useState('')
 
-  // Handle LinkedIn OAuth redirect
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const connected = params.get('linkedin_connected') === 'true'
-    const linkedinError = params.get('linkedin_error')
-
-    if (connected) {
-      setLinkedinMessage('LinkedIn connected successfully!')
-      window.history.replaceState({}, '', '/settings')
-      setTimeout(() => setLinkedinMessage(''), 4000)
-      // Force re-fetch profile to pick up linkedin_connected
-      fetchData()
-    } else if (linkedinError) {
-      setLinkedinMessage(`LinkedIn connection failed: ${linkedinError}`)
-      window.history.replaceState({}, '', '/settings')
-      setTimeout(() => setLinkedinMessage(''), 6000)
-    }
-  }, [])
-
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setLoading(false); return }
@@ -133,6 +114,17 @@ export default function SettingsPage() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
+  // Handle LinkedIn OAuth redirect after linkIdentity callback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('linkedin_linked') === 'true') {
+      setLinkedinMessage('LinkedIn connected successfully!')
+      window.history.replaceState({}, '', '/settings')
+      setTimeout(() => setLinkedinMessage(''), 4000)
+      fetchData()
+    }
+  }, [fetchData])
+
   // ─── Profile ───
   const handleSaveProfile = async () => {
     if (!profile) return
@@ -150,37 +142,42 @@ export default function SettingsPage() {
   // ─── LinkedIn ───
   const handleLinkedInConnect = async () => {
     try {
-      const res = await fetch('/api/auth/linkedin/start')
-      const data = await res.json()
-      if (data.authUrl) {
-        window.location.href = data.authUrl
-      } else {
-        alert(data.error || 'Failed to start LinkedIn connection')
-      }
-    } catch {
-      alert('Failed to connect to LinkedIn')
+      sessionStorage.setItem('linkedin_connect_return_to', '/settings')
+      const { error } = await supabase.auth.signInWithOAuth({ provider: 'linkedin_oidc', options: { redirectTo: 'https://getautoapply.vercel.app/auth/callback' } })
+      if (error) throw error
+    } catch (err: any) {
+      alert(err.message || 'Failed to connect LinkedIn')
     }
   }
 
   const handleLinkedInDisconnect = async () => {
-    if (!profile) return
-    const { error } = await supabase.from('profiles').update({
-      linkedin_connected: false,
-      linkedin_id: null,
-      linkedin_first_name: null,
-      linkedin_last_name: null,
-      linkedin_headline: null,
-      linkedin_summary: null,
-      linkedin_profile_url: null,
-      linkedin_profile_image_url: null,
-      linkedin_raw_profile: null,
-      linkedin_token: null,
-      linkedin_connected_at: null,
-    }).eq('id', profile.id)
-    if (!error) {
+    try {
+      const { data: identities } = await supabase.auth.getUserIdentities()
+      const linkedinIdentity = identities?.identities.find(i => i.provider === 'linkedin' || i.provider === 'linkedin_oidc')
+      if (linkedinIdentity) {
+        const { error } = await supabase.auth.unlinkIdentity(linkedinIdentity)
+        if (error) throw error
+      }
+      if (profile) {
+        await supabase.from('profiles').update({
+          linkedin_connected: false,
+          linkedin_id: null,
+          linkedin_first_name: null,
+          linkedin_last_name: null,
+          linkedin_headline: null,
+          linkedin_summary: null,
+          linkedin_profile_url: null,
+          linkedin_profile_image_url: null,
+          linkedin_raw_profile: null,
+          linkedin_token: null,
+          linkedin_connected_at: null,
+        }).eq('id', profile.id)
+      }
       setLinkedinConnected(false)
       setLinkedinProfile(null)
       setProfile(p => p ? { ...p, linkedin_connected: false } : p)
+    } catch (err: any) {
+      alert(err.message || 'Failed to disconnect LinkedIn')
     }
   }
 
