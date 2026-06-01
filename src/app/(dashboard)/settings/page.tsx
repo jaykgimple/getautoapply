@@ -143,7 +143,8 @@ export default function SettingsPage() {
   const handleLinkedInConnect = async () => {
     try {
       sessionStorage.setItem('linkedin_connect_return_to', '/settings')
-      const { error } = await supabase.auth.signInWithOAuth({ provider: 'linkedin_oidc', options: { redirectTo: 'https://getautoapply.vercel.app/auth/callback' } })
+      const redirectUrl = typeof window !== 'undefined' ? window.location.origin + '/auth/callback' : 'https://jobbox-os.vercel.app/auth/callback'
+      const { error } = await supabase.auth.signInWithOAuth({ provider: 'linkedin_oidc', options: { redirectTo: redirectUrl } })
       if (error) throw error
     } catch (err: any) {
       alert(err.message || 'Failed to connect LinkedIn')

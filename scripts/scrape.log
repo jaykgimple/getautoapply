@@ -262,3 +262,25 @@ Traceback (most recent call last):
   File "/root/projects/getautoapply/scripts/scrape_one.py", line 24, in scrape_one
     from jobspy import scrape_jobs
 ModuleNotFoundError: No module named 'jobspy'
+[03:50:11] Running: Chief Data Officer
+[03:50:11] Scraping 'Chief Data Officer' on both...
+Traceback (most recent call last):
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 134, in <module>
+    main()
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 126, in main
+    jobs = scrape_one(SEARCH_TERM, SITE)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 24, in scrape_one
+    from jobspy import scrape_jobs
+ModuleNotFoundError: No module named 'jobspy'
+[04:00:06] Running: Chief Data Officer
+[04:00:06] Scraping 'Chief Data Officer' on both...
+Traceback (most recent call last):
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 134, in <module>
+    main()
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 126, in main
+    jobs = scrape_one(SEARCH_TERM, SITE)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 24, in scrape_one
+    from jobspy import scrape_jobs
+ModuleNotFoundError: No module named 'jobspy'
