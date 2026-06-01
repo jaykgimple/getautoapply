@@ -1,0 +1,21 @@
+[20260601-151027] Rotating sources: python_jobs + authenticjobs
+
+🔍 Scraping single source: python_jobs
+
+📡 Scraping Python.org jobs (RSS)...
+  ✓ Python.org: 20 jobs
+
+=======================================================
+📊 Results: 20 inserted, 0 skipped (dupes), 0 errors
+=======================================================
+
+
+🔍 Scraping single source: authenticjobs
+
+📡 Scraping Authentic Jobs API...
+  ✗ Authentic Jobs returned 404
+
+=======================================================
+📊 Results: 0 inserted, 0 skipped (dupes), 0 errors
+=======================================================
+

@@ -1,0 +1,7 @@
+[20260601-153001] Rotating sources: arbeitnow + greenhouse
+  File "/root/projects/getautoapply/scripts/scrape_all_sources.py", line 505
+    def scrape_greenhouse_batch2(max_results: int = 100) -> list:
+SyntaxError: expected 'except' or 'finally' block
+  File "/root/projects/getautoapply/scripts/scrape_all_sources.py", line 505
+    def scrape_greenhouse_batch2(max_results: int = 100) -> list:
+SyntaxError: expected 'except' or 'finally' block

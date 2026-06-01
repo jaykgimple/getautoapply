@@ -17,6 +17,8 @@ interface SearchJob {
   job_type: string | null
   is_remote: boolean
   match_score: number
+  saved_job_id?: string  // ID in user's saved jobs table (for unsaving)
+  is_saved?: boolean
 }
 
 interface SavedSearch {
@@ -37,13 +39,20 @@ const JOB_TYPES = [
 
 const SOURCES = [
   { value: '', label: 'All Sources' },
-  { value: 'jobspy_linkedin', label: 'LinkedIn' },
-  { value: 'jobspy_indeed', label: 'Indeed' },
+  { value: 'jobspy', label: 'LinkedIn + Indeed' },
   { value: 'remoteok', label: 'RemoteOK' },
-  { value: 'jobicy', label: 'Jobicy' },
-  { value: 'weworkremotely', label: 'WeWorkRemotely' },
   { value: 'remotive', label: 'Remotive' },
+  { value: 'weworkremotely', label: 'WeWorkRemotely' },
+  { value: 'jobicy', label: 'Jobicy' },
+  { value: 'arbeitnow', label: 'Arbeitnow (EU)' },
+  { value: 'greenhouse', label: 'Greenhouse' },
+  { value: 'lever', label: 'Lever' },
+  { value: 'python_jobs', label: 'Python Jobs' },
+  { value: 'manual', label: 'Manual' },
 ]
+
+const ACTIVE_SOURCES = SOURCES.filter(s => s.value).length
+const SOURCE_UPDATE_INTERVAL = 'hourly'
 
 const MATCH_LABELS = [
   { min: 80, label: 'Great match', color: '#22c55e' },
@@ -70,6 +79,30 @@ function timeAgo(dateStr: string | null): string {
   return `${months}mo ago`
 }
 
+/** Sanitize HTML for safe rendering — keep formatting tags, strip dangerous ones */
+function sanitizeHtml(html: string): string {
+  if (!html) return ''
+  let text = String(html)
+  // Remove script/style/iframe/object/embed blocks
+  text = text.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+  text = text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+  text = text.replace(/<iframe[^>]*>[\s\S]*?<\/iframe>/gi, '')
+  text = text.replace(/<object[^>]*>[\s\S]*?<\/object>/gi, '')
+  text = text.replace(/<embed[^>]*[\s\S]*?<\/embed>/gi, '')
+  text = text.replace(/<form[^>]*>[\s\S]*?<\/form>/gi, '')
+  // Remove dangerous tags completely
+  text = text.replace(/<\/?(input|button|select|textarea|meta|link|base|img|video|audio|source|track|applet)[^>]*>/gi, '')
+  // Strip on* event handlers from remaining tags
+  text = text.replace(/\s(on\w+|style|xmlns|xlink:href)=[^\s>]*(>|\s)/gi, '$2')
+  // Ensure all links open safely
+  text = text.replace(/<a\s[^>]*>/gi, (match) => {
+    if (!match.includes('target=')) match = match.replace(/>$/, ' target="_blank" rel="noopener noreferrer">')
+    const clean = match.replace(/target=_blank/gi, 'target="_blank"').replace(/rel=noopener/gi, 'rel="noopener noreferrer"')
+    return clean
+  })
+  return text.trim()
+}
+
 export default function JobSearchPage() {
   const supabase = createClient()
   const [query, setQuery] = useState('')
@@ -81,11 +114,13 @@ export default function JobSearchPage() {
   const [loading, setLoading] = useState(true)
   const [searched, setSearched] = useState(false)
   const [error, setError] = useState('')
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
-  const [expanded, setExpanded] = useState<string | null>(null)
+  // Track saved jobs by URL (stable across re-renders, matches DB dedup key)
+  const [savedUrls, setSavedUrls] = useState<Set<string>>(new Set())
+  const [expandedId, setExpandedId] = useState<string | null>(null)
   const [totalJobs, setTotalJobs] = useState(0)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [savingId, setSavingId] = useState<string | null>(null)
 
   // Saved search state
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
@@ -133,7 +168,34 @@ export default function JobSearchPage() {
         throw new Error(data.error || `Search failed (${res.status})`)
       }
       const data = await res.json()
-      setJobs(data.jobs || [])
+      const rawJobs = data.jobs || []
+
+      // Get current user's saved job URLs for these jobs
+      const { data: { user } } = await supabase.auth.getUser()
+      let userSavedUrls: Set<string> = new Set()
+      if (user) {
+        const jobUrls = rawJobs.map((j: SearchJob) => j.url).filter(Boolean)
+        if (jobUrls.length > 0) {
+          const { data: savedRows } = await supabase
+            .from('jobs')
+            .select('job_url')
+            .eq('user_id', user.id)
+            .in('job_url', jobUrls)
+          if (savedRows) {
+            userSavedUrls = new Set(savedRows.map((r: any) => r.job_url))
+          }
+        }
+      }
+
+      // Sanitize HTML descriptions for safe rendering
+      const cleaned = rawJobs.map((j: SearchJob) => ({
+        ...j,
+        description: sanitizeHtml(j.description || ''),
+        is_saved: userSavedUrls.has(j.url || ''),
+      }))
+
+      setSavedUrls(userSavedUrls)
+      setJobs(cleaned)
       setTotalJobs(data.total || 0)
       setPage(p)
       setTotalPages(data.totalPages || 1)
@@ -149,7 +211,7 @@ export default function JobSearchPage() {
   useEffect(() => {
     doSearch(1)
     loadSavedSearches()
-  }, [])  // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadSavedSearches = async () => {
     try {
@@ -215,44 +277,83 @@ export default function JobSearchPage() {
     }
   }
 
-  const handleSave = async (e: React.MouseEvent, job: SearchJob) => {
+  const handleToggleSave = async (e: React.MouseEvent, job: SearchJob) => {
     e.stopPropagation()
+    if (savingId) return // Prevent double-clicks
+
+    setSavingId(job.id)
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { alert('Please log in to save jobs'); return }
 
-      const { error } = await supabase.from('jobs').insert({
-        user_id: user.id,
-        title: job.title,
-        company: job.company_name,
-        location: job.location,
-        job_url: job.url,
-        description: job.description,
-        source: `saved_from_${job.source}`,
-        job_type: job.job_type,
-        remote_type: job.is_remote ? 'remote' : 'onsite',
-        status: 'saved',
-        salary_min: job.salary_min,
-        salary_max: job.salary_max,
-      })
+      const jobUrl = job.url || ''
+      const isSaved = savedUrls.has(jobUrl)
 
-      if (!error) {
-        setSavedIds(prev => new Set(prev).add(job.id))
-      } else if (error.code === '23505') {
-        setSavedIds(prev => new Set(prev).add(job.id))
+      if (isSaved) {
+        // Unsave: delete the user's saved job entry
+        const { error } = await supabase
+          .from('jobs')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('job_url', jobUrl)
+          .eq('status', 'saved')
+
+        if (!error) {
+          setSavedUrls(prev => {
+            const next = new Set(prev)
+            next.delete(jobUrl)
+            return next
+          })
+          // Update the job in-place so the button updates without re-searching
+          setJobs(prev => prev.map(j => j.id === job.id ? { ...j, is_saved: false } : j))
+        } else {
+          console.error('Unsave error:', error)
+          alert('Failed to unsave job')
+        }
       } else {
-        console.error('Save error:', error)
+        // Save: insert into user's jobs
+        const desc = (job.description || '').slice(0, 2000)
+        const { error } = await supabase.from('jobs').insert({
+          user_id: user.id,
+          title: job.title,
+          company: job.company_name,
+          location: job.location,
+          job_url: jobUrl,
+          description: desc,
+          source: `saved_from_${job.source}`,
+          job_type: job.job_type,
+          remote_type: job.is_remote ? 'remote' : 'onsite',
+          status: 'saved',
+          is_active: true,
+          salary_min: job.salary_min,
+          salary_max: job.salary_max,
+        })
+
+        if (!error) {
+          setSavedUrls(prev => new Set(prev).add(jobUrl))
+          setJobs(prev => prev.map(j => j.id === job.id ? { ...j, is_saved: true } : j))
+        } else if (error.code === '23505') {
+          // Already saved (race condition or stale state)
+          setSavedUrls(prev => new Set(prev).add(jobUrl))
+          setJobs(prev => prev.map(j => j.id === job.id ? { ...j, is_saved: true } : j))
+        } else {
+          console.error('Save error:', error)
+          alert('Failed to save job')
+        }
       }
     } catch (err: any) {
       alert('Failed to save job')
+    } finally {
+      setSavingId(null)
     }
   }
 
   const handleCardClick = (e: React.MouseEvent, jobId: string) => {
-    // Don't toggle if clicking buttons or links
+    if (!jobId) return
+    // Don't toggle if clicking buttons, links, or any interactive element
     const target = e.target as HTMLElement
-    if (target.closest('button') || target.closest('a')) return
-    setExpanded(expanded === jobId ? null : jobId)
+    if (target.closest('button') || target.closest('a') || target.closest('select') || target.closest('input')) return
+    setExpandedId(expandedId === jobId ? null : jobId)
   }
 
   const clearFilters = () => {
@@ -271,7 +372,7 @@ export default function JobSearchPage() {
         <div className="mb-8">
           <h1 className="text-[24px] font-medium tracking-tight" style={{ color: 'var(--text-primary)' }}>Find Jobs</h1>
           <p className="text-[14px] mt-1" style={{ color: 'var(--text-tertiary)' }}>
-            {totalJobs > 0 ? `${totalJobs.toLocaleString()} jobs in our database · New jobs added hourly from 7 sources` : 'Thousands of jobs updated hourly from LinkedIn, Indeed, RemoteOK, and more'}
+            {totalJobs > 0 ? `${totalJobs.toLocaleString()} jobs found · Updated ${SOURCE_UPDATE_INTERVAL} from ${ACTIVE_SOURCES} sources` : `Thousands of jobs updated ${SOURCE_UPDATE_INTERVAL} from ${ACTIVE_SOURCES} sources`}
           </p>
         </div>
 
@@ -328,7 +429,6 @@ export default function JobSearchPage() {
             <button onClick={clearFilters}
               className="text-[12px] hover:underline" style={{ color: 'var(--text-quaternary)' }}>Clear filters</button>
 
-            {/* Save Search button */}
             {searched && canSaveSearch && (
               <button
                 onClick={handleSaveSearch}
@@ -390,11 +490,6 @@ export default function JobSearchPage() {
           <div className="rounded-xl border p-12 text-center" style={{ background: 'var(--bg-panel)', borderColor: 'var(--border-subtle)' }}>
             <p className="text-[15px] font-medium" style={{ color: 'var(--text-secondary)' }}>No jobs found</p>
             <p className="text-[13px] mt-1" style={{ color: 'var(--text-quaternary)' }}>Try broadening your search terms or changing filters</p>
-            {savedSearches.length === 0 && (
-              <p className="text-[13px] mt-3" style={{ color: 'var(--text-quaternary)' }}>
-                💡 Save this search and we'll automatically find new matching jobs every hour
-              </p>
-            )}
           </div>
         ) : jobs.length > 0 ? (
           <div className="space-y-2">
@@ -418,8 +513,8 @@ export default function JobSearchPage() {
 
             {jobs.map(job => {
               const match = getMatchInfo(job.match_score)
-              const isSaved = savedIds.has(job.id)
-              const isExpanded = expanded === job.id
+              const isSaved = job.is_saved || false
+              const isExpanded = expandedId === job.id
 
               return (
                 <div key={job.id}
@@ -467,13 +562,16 @@ export default function JobSearchPage() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <button onClick={(e) => handleSave(e, job)} disabled={isSaved}
+                      <button
+                        onClick={(e) => handleToggleSave(e, job)}
+                        disabled={savingId === job.id}
                         className="text-[12px] font-medium px-3 py-1.5 rounded-md text-white transition-colors disabled:opacity-50"
                         style={{ background: isSaved ? '#22c55e' : 'var(--brand)' }}>
-                        {isSaved ? '✓ Saved' : 'Save'}
+                        {savingId === job.id ? '...' : isSaved ? '✓ Saved' : 'Save'}
                       </button>
                       {job.url && (
                         <a href={job.url} target="_blank" rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
                           className="text-[12px] font-medium px-3 py-1.5 rounded-md border transition-colors"
                           style={{ borderColor: 'var(--border-subtle)', color: 'var(--brand-bright)' }}>
                           Apply ↗
@@ -487,13 +585,11 @@ export default function JobSearchPage() {
                     </div>
                   </div>
 
-                  {/* Expanded description — only show if has content */}
+                  {/* Expanded description */}
                   {isExpanded && job.description && job.description.trim().length > 0 && (
-                    <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
-                      <p className="text-[13px] whitespace-pre-line leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                        {job.description}
-                      </p>
-                    </div>
+                    <div className="mt-4 pt-4 border-t description-html" style={{ borderColor: 'var(--border-subtle)' }}
+                      dangerouslySetInnerHTML={{ __html: job.description }}
+                    />
                   )}
                 </div>
               )
@@ -529,10 +625,7 @@ export default function JobSearchPage() {
             </div>
             <p className="text-[15px] font-medium" style={{ color: 'var(--text-secondary)' }}>Search for your next opportunity</p>
             <p className="text-[13px] mt-1 max-w-md mx-auto" style={{ color: 'var(--text-quaternary)' }}>
-              Enter a job title, keyword, or company name above. Filter by location, type, or source.
-            </p>
-            <p className="text-[13px] mt-2 max-w-md mx-auto" style={{ color: 'var(--text-quaternary)' }}>
-              💡 Save a search and we'll find new matching jobs for you every hour
+              Enter a job title, keyword, or company name above.
             </p>
           </div>
         )}

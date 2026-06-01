@@ -58,9 +58,17 @@ export async function GET(req: NextRequest) {
       dbQuery = dbQuery.eq('job_type', jobType)
     }
 
-    // Source filter
+    // Source filter — supports exact match and prefix groups (e.g. "greenhouse" matches "greenhouse_airbnb")
     if (source) {
-      dbQuery = dbQuery.eq('source', source)
+      if (source === 'greenhouse') {
+        dbQuery = dbQuery.ilike('source', 'greenhouse%')
+      } else if (source === 'remotive') {
+        dbQuery = dbQuery.ilike('source', 'remotive%')
+      } else if (source === 'jobspy') {
+        dbQuery = dbQuery.in('source', ['jobspy_linkedin', 'jobspy_indeed'])
+      } else {
+        dbQuery = dbQuery.eq('source', source)
+      }
     }
 
     // Order and paginate
@@ -81,6 +89,7 @@ export async function GET(req: NextRequest) {
 
     // Format results
     const results = (jobs || []).map((job: any) => ({
+      id: job.id,
       external_id: job.id,
       title: job.title,
       company_name: job.company,

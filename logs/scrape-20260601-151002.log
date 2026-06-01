@@ -1,0 +1,21 @@
+[20260601-151002] Rotating sources: lever + remotive_rss
+
+🔍 Scraping single source: lever
+
+📡 Scraping Lever boards...
+  ✓ Lever: 5 jobs
+
+=======================================================
+📊 Results: 5 inserted, 0 skipped (dupes), 0 errors
+=======================================================
+
+
+🔍 Scraping single source: remotive_rss
+
+📡 Scraping Remotive RSS...
+  ✓ Remotive RSS: 18 jobs
+
+=======================================================
+📊 Results: 18 inserted, 0 skipped (dupes), 0 errors
+=======================================================
+

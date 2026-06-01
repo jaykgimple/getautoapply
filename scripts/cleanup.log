@@ -43,3 +43,129 @@
 ├────────┼──────────┼───────┤
 │ 7759   │ 0        │ 7759  │
 └────────┴──────────┴───────┘
+[05:00:02] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 7759   │ 0        │ 7759  │
+└────────┴──────────┴───────┘
+[06:00:01] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 8053   │ 0        │ 8053  │
+└────────┴──────────┴───────┘
+[07:00:01] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 8054   │ 0        │ 8054  │
+└────────┴──────────┴───────┘
+[08:00:02] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 8075   │ 0        │ 8075  │
+└────────┴──────────┴───────┘
+[09:00:01] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 8077   │ 0        │ 8077  │
+└────────┴──────────┴───────┘
+[10:00:01] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 8096   │ 0        │ 8096  │
+└────────┴──────────┴───────┘
+[11:00:02] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 8121   │ 0        │ 8121  │
+└────────┴──────────┴───────┘
+[12:00:01] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 8134   │ 0        │ 8134  │
+└────────┴──────────┴───────┘
+[13:00:01] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 8147   │ 0        │ 8147  │
+└────────┴──────────┴───────┘
+[14:00:01] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 8160   │ 0        │ 8160  │
+└────────┴──────────┴───────┘
+[15:00:01] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 8199   │ 0        │ 8199  │
+└────────┴──────────┴───────┘
+[16:00:01] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 8297   │ 0        │ 8297  │
+└────────┴──────────┴───────┘
+[17:00:02] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 8316   │ 0        │ 8316  │
+└────────┴──────────┴───────┘
+[18:00:01] Starting stale job cleanup...
+  Stale jobs (30+ days, jobspy): ├─────────────┤
+  Deactivated stale jobspy jobs
+  Deleted 90+ day old inactive jobs
+  Stats: ┌────────┬──────────┬───────┐
+│ active │ inactive │ total │
+├────────┼──────────┼───────┤
+│ 8323   │ 0        │ 8323  │
+└────────┴──────────┴───────┘

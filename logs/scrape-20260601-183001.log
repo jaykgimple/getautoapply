@@ -1,0 +1,22 @@
+[20260601-183001] Rotation 5
+  → Remotive RSS + Greenhouse batch 2
+
+🔍 Scraping single source: remotive_rss
+
+📡 Scraping Remotive RSS...
+  ✓ Remotive RSS: 18 jobs
+
+=======================================================
+📊 Results: 18 inserted, 0 skipped (dupes), 0 errors
+=======================================================
+
+
+🔍 Scraping single source: greenhouse2
+
+📡 Scraping Greenhouse boards (batch 2)...
+  ✓ Greenhouse batch 2: 50 jobs
+
+=======================================================
+📊 Results: 50 inserted, 0 skipped (dupes), 0 errors
+=======================================================
+

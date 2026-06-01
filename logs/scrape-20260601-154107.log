@@ -1,0 +1,21 @@
+[20260601-154107] Rotating sources: remoteok + remotive
+
+🔍 Scraping single source: remoteok
+
+📡 Scraping RemoteOK...
+  ✓ RemoteOK: 93 jobs
+
+=======================================================
+📊 Results: 88 inserted, 5 skipped (dupes), 0 errors
+=======================================================
+
+
+🔍 Scraping single source: remotive
+
+📡 Scraping Remotive...
+  ✓ Remotive: 18 jobs
+
+=======================================================
+📊 Results: 18 inserted, 0 skipped (dupes), 0 errors
+=======================================================
+

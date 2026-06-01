@@ -1,0 +1,13 @@
+[20260601-172018] Rotating sources: python_jobs + authenticjobs
+
+🔍 Scraping single source: python_jobs
+
+📡 Scraping Python.org jobs (RSS)...
+  ✓ Python.org: 20 jobs
+
+=======================================================
+📊 Results: 20 inserted, 0 skipped (dupes), 0 errors
+=======================================================
+
+Unknown source: authenticjobs
+Available: remoteok, remotive, weworkremotely, jobicy, arbeitnow, greenhouse, lever, remotive_rss, python_jobs, greenhouse2
