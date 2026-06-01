@@ -185,3 +185,80 @@ Traceback (most recent call last):
   File "/root/projects/getautoapply/scripts/scrape_one.py", line 24, in scrape_one
     from jobspy import scrape_jobs
 ModuleNotFoundError: No module named 'jobspy'
+[02:40:05] Running: Chief Data Officer
+[02:40:05] Scraping 'Chief Data Officer' on both...
+Traceback (most recent call last):
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 134, in <module>
+    main()
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 126, in main
+    jobs = scrape_one(SEARCH_TERM, SITE)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 24, in scrape_one
+    from jobspy import scrape_jobs
+ModuleNotFoundError: No module named 'jobspy'
+[02:50:06] Running: Chief Data Officer
+[02:50:07] Scraping 'Chief Data Officer' on both...
+Traceback (most recent call last):
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 134, in <module>
+    main()
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 126, in main
+    jobs = scrape_one(SEARCH_TERM, SITE)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 24, in scrape_one
+    from jobspy import scrape_jobs
+ModuleNotFoundError: No module named 'jobspy'
+[03:00:05] Running: Chief Data Officer
+[03:00:05] Scraping 'Chief Data Officer' on both...
+Traceback (most recent call last):
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 134, in <module>
+    main()
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 126, in main
+    jobs = scrape_one(SEARCH_TERM, SITE)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 24, in scrape_one
+    from jobspy import scrape_jobs
+ModuleNotFoundError: No module named 'jobspy'
+[03:10:04] Running: Chief Data Officer
+[03:10:04] Scraping 'Chief Data Officer' on both...
+Traceback (most recent call last):
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 134, in <module>
+    main()
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 126, in main
+    jobs = scrape_one(SEARCH_TERM, SITE)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 24, in scrape_one
+    from jobspy import scrape_jobs
+ModuleNotFoundError: No module named 'jobspy'
+[03:20:07] Running: Chief Data Officer
+[03:20:07] Scraping 'Chief Data Officer' on both...
+Traceback (most recent call last):
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 134, in <module>
+    main()
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 126, in main
+    jobs = scrape_one(SEARCH_TERM, SITE)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 24, in scrape_one
+    from jobspy import scrape_jobs
+ModuleNotFoundError: No module named 'jobspy'
+[03:30:05] Running: Chief Data Officer
+[03:30:05] Scraping 'Chief Data Officer' on both...
+Traceback (most recent call last):
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 134, in <module>
+    main()
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 126, in main
+    jobs = scrape_one(SEARCH_TERM, SITE)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 24, in scrape_one
+    from jobspy import scrape_jobs
+ModuleNotFoundError: No module named 'jobspy'
+[03:40:05] Running: Chief Data Officer
+[03:40:05] Scraping 'Chief Data Officer' on both...
+Traceback (most recent call last):
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 134, in <module>
+    main()
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 126, in main
+    jobs = scrape_one(SEARCH_TERM, SITE)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/projects/getautoapply/scripts/scrape_one.py", line 24, in scrape_one
+    from jobspy import scrape_jobs
+ModuleNotFoundError: No module named 'jobspy'
